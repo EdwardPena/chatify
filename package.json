@@ -1,0 +1,14 @@
+{
+  "name": "livechatapp",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npm install --prefix chat-server && npm install --prefix chat-client && npm run build --prefix chat-client",
+    "start": "npm run start --prefix chat-server"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
