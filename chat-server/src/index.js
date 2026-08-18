@@ -18,7 +18,7 @@ app.use(cors({ origin: true }));
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 
-// make ready for deployments
+// make ready for deployment
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../chat-client/dist")));
