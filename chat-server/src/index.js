@@ -7,14 +7,15 @@ import path from "path";
 import { connectDB } from "./lib/db.js";
 
 dotenv.config();
+console.log("MONGODB_URI:", process.env.MONGODB_URI);
 
 const app = express();
 const __dirname = path.resolve();
 
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
-app.use(cors({ origin: true }));
+app.use(express.json()); // req.body
+// app.use(cors({ origin: true }));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
