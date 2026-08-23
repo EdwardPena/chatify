@@ -1,26 +1,37 @@
-import { Route, Routes } from "react-router";
+import { Navigate, Route, Routes } from "react-router";
 import { ChatPage, Login, SignUp } from "./pages";
 import Background from "./components/Background";
 import { useAuthStore } from "./store/useAuthStore";
+import { useEffect } from "react";
+import PageLoader from "./components/PageLoader";
+import { Toaster } from "react-hot-toast";
 
 function App() {
-  const { authUser, isLoggedIn, login, isLoading } = useAuthStore();
+  const { checkAuth, isCheckingAuth, authUser } = useAuthStore();
 
-  console.log("auth user: ", authUser);
-  console.log("isLoggedIn: ", isLoggedIn);
-  console.log("isLoading: ", isLoading);
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  if (isCheckingAuth) return <PageLoader />;
 
   return (
     <Background>
-      <button onClick={login} className="z-10">
-        Login
-      </button>
-
       <Routes>
-        <Route path="/" element={<ChatPage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<SignUp />} />
+        <Route
+          path="/"
+          element={authUser ? <ChatPage /> : <Navigate to={"/login"} />}
+        />
+        <Route
+          path="/login"
+          element={!authUser ? <Login /> : <Navigate to={"/"} />}
+        />
+        <Route
+          path="/signup"
+          element={!authUser ? <SignUp /> : <Navigate to={"/"} />}
+        />
       </Routes>
+      <Toaster />
     </Background>
   );
 }
