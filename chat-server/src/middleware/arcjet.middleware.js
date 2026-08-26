@@ -6,6 +6,7 @@ export const arcjetProtection = async (req, res, next) => {
     const decision = await aj.protect(req);
 
     if (decision.isDenied()) {
+      console.log("Arcjet denied:", decision.reason); // <-- agrega esto
       if (decision.reason.isRateLimit()) {
         return res
           .status(429)
