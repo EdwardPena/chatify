@@ -5,8 +5,13 @@ import { useChatStore } from "../store/useChatStore";
 import { useAuthStore } from "../store/useAuthStore";
 
 function ChatsList() {
-  const { getMyChatPartners, chats, isUsersLoading, setSelectedUser } =
-    useChatStore();
+  const {
+    getMyChatPartners,
+    chats,
+    isUsersLoading,
+    setSelectedUser,
+    unreadCounts,
+  } = useChatStore();
   const { onlineUsers } = useAuthStore();
 
   useEffect(() => {
@@ -20,6 +25,7 @@ function ChatsList() {
     <>
       {chats.map((chat) => {
         const isOnline = onlineUsers?.includes(chat._id);
+        const unreadCount = unreadCounts?.[chat._id] || 0;
 
         return (
           <div
@@ -40,9 +46,16 @@ function ChatsList() {
                   <span className="absolute bottom-0 right-0 size-3 rounded-full bg-green-500 border-2 border-slate-800" />
                 )}
               </div>
-              <h4 className="text-slate-200 font-medium truncate">
+
+              <h4 className="text-slate-200 font-medium truncate flex-1">
                 {chat.fullName}
               </h4>
+
+              {unreadCount > 0 && (
+                <span className="bg-cyan-500 text-white text-xs font-semibold rounded-full size-5 flex items-center justify-center flex-shrink-0">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
             </div>
           </div>
         );

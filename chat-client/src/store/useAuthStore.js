@@ -82,25 +82,31 @@ export const useAuthStore = create((set, get) => ({
   },
 
   connectSocket: () => {
-    const { authUser } = get();
-    if (!authUser || get().socket?.connected) return;
+    const { authUser, socket } = get();
+    if (!authUser) return;
+    if (socket) return;
 
-    const socket = io(BASE_URL, {
-      withCredentials: true, // this ensures cookies are sent with the connection
+    const newSocket = io(BASE_URL, {
+      withCredentials: true,
     });
 
-    socket.connect();
+    set({ socket: newSocket });
 
-    set({ socket });
-
-    // listen for online users event
-    socket.on("getOnlineUsers", (userIds) => {
+    newSocket.on("getOnlineUsers", (userIds) => {
       set({ onlineUsers: userIds });
+    });
+
+    import("./useChatStore").then(({ useChatStore }) => {
+      useChatStore.getState().initMessageListener();
     });
   },
 
   disconnectSocket: () => {
-    if (get().socket?.connected) get().socket.disconnect();
+    const { socket } = get();
+    if (socket) {
+      socket.disconnect();
+      set({ socket: null });
+    }
   },
 }));
 // authUser: { name: "jhon", _id: 123, age: 25 },
