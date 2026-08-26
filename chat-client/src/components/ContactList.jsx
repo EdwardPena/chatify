@@ -16,24 +16,33 @@ function ContactList() {
 
   return (
     <>
-      {allContacts.map((contact) => (
-        <div
-          key={contact._id}
-          className="bg-cyan-500/10 p-4 rounded-lg cursor-pointer hover:bg-cyan-500/20 transition-colors"
-          onClick={() => setSelectedUser(contact)}
-        >
-          <div className="flex items-center gap-3">
-            <div
-            // className={`avatar ${onlineUsers.includes(contact._id) ? "online" : "offline"}`}
-            >
-              <div className="size-12 rounded-full">
-                <img src={contact.profilePic || "/avatar.png"} />
+      {allContacts.map((contact) => {
+        const isOnline = onlineUsers?.includes(contact._id);
+
+        return (
+          <div
+            key={contact._id}
+            className="bg-cyan-500/10 p-4 rounded-lg cursor-pointer hover:bg-cyan-500/20 transition-colors"
+            onClick={() => setSelectedUser(contact)}
+          >
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="size-12 rounded-full">
+                  <img
+                    src={contact.profilePic || "/avatar.png"}
+                    alt={contact.fullName}
+                    className="size-full rounded-full object-cover"
+                  />
+                </div>
+                {isOnline && (
+                  <span className="absolute bottom-0 right-0 size-3 rounded-full bg-green-500 border-2 border-slate-800" />
+                )}
               </div>
+              <h4 className="text-slate-200 font-medium">{contact.fullName}</h4>
             </div>
-            <h4 className="text-slate-200 font-medium">{contact.fullName}</h4>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </>
   );
 }
