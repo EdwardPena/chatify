@@ -23,7 +23,7 @@ function ActiveTabSwitch() {
       <button
         role="tab"
         onClick={() => setActiveTab("contacts")}
-        className={`tab flex-1 ${
+        className={`tab flex-1 mr-2 ${
           activeTab === "contacts"
             ? "tab-active bg-cyan-500/20 text-cyan-400"
             : "text-slate-400"
