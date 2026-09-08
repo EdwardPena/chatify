@@ -8,9 +8,10 @@ import cloudinary from "../lib/cloudinary.js";
 export const signup = async (req, res) => {
   // res.send("Signup endpoint");
   const { fullName, email, password } = req.body;
+  const username = (req.body.username || "").trim().toLowerCase();
 
   try {
-    if (!fullName || !email || !password) {
+    if (!fullName || !email || !password || !username) {
       return res.status(400).json({ message: "All fields are required" });
     }
     if (password.length < 6) {
@@ -23,11 +24,25 @@ export const signup = async (req, res) => {
     if (!emailRegex.test(email)) {
       return res.status(400).json({ message: "Invalid email format" });
     }
+    // usernames are how other people find you, keep them short and mentionable
+    const usernameRegex = /^[a-z0-9_]{3,20}$/;
+    if (!usernameRegex.test(username)) {
+      return res.status(400).json({
+        message:
+          "Username must be 3-20 characters, using letters, numbers or underscores",
+      });
+    }
 
     const user = await User.findOne({ email });
 
     if (user) {
       return res.status(400).json({ message: "Email already exists" });
+    }
+
+    const usernameTaken = await User.exists({ username });
+
+    if (usernameTaken) {
+      return res.status(400).json({ message: "Username already taken" });
     }
 
     // 123456 => $askldjasdkla_akldjaklsjd?>.,fsdf
@@ -38,6 +53,7 @@ export const signup = async (req, res) => {
     const newUser = new User({
       fullName,
       email,
+      username,
       password: hashedPassword,
     });
 
@@ -51,6 +67,7 @@ export const signup = async (req, res) => {
       res.status(201).json({
         _id: newUser._id,
         fullName: newUser.fullName,
+        username: newUser.username,
         email: newUser.email,
         profilePic: newUser.profilePic,
       });
@@ -68,6 +85,14 @@ export const signup = async (req, res) => {
       res.status(400).json({ message: "Invalid user data" });
     }
   } catch (error) {
+    // the unique index rejected an email or username that was claimed between
+    // our check above and the save
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern || {})[0] === "username"
+        ? "Username"
+        : "Email";
+      return res.status(400).json({ message: `${field} already taken` });
+    }
     console.error("Error occurred while signing up:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
@@ -93,6 +118,7 @@ export const login = async (req, res) => {
     res.status(200).json({
       _id: user._id,
       fullName: user.fullName,
+      username: user.username,
       email: user.email,
       profilePic: user.profilePic,
     });

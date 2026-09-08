@@ -20,6 +20,15 @@ const messageSchema = new mongoose.Schema(
     image: {
       type: String,
     },
+    audio: {
+      type: String,
+    },
+    // length of the voice note in seconds, so the bubble can render a duration
+    // without having to download the file first
+    audioDuration: {
+      type: Number,
+      min: 0,
+    },
   },
   { timestamps: true },
 );

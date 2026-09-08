@@ -4,7 +4,6 @@ import toast from "react-hot-toast";
 import { useAuthStore } from "./useAuthStore";
 
 export const useChatStore = create((set, get) => ({
-  allContacts: [],
   chats: [],
   messages: [],
   activeTab: "chats",
@@ -29,18 +28,6 @@ export const useChatStore = create((set, get) => ({
       set((state) => ({
         unreadCounts: { ...state.unreadCounts, [selectedUser._id]: 0 },
       }));
-    }
-  },
-
-  getAllContacts: async () => {
-    set({ isUsersLoading: true });
-    try {
-      const res = await axiosInstance.get("messages/contacts");
-      set({ allContacts: res.data.users });
-    } catch (error) {
-      toast.error(error.response.data.message);
-    } finally {
-      set({ isUsersLoading: false });
     }
   },
 
@@ -79,6 +66,10 @@ export const useChatStore = create((set, get) => ({
       receiverId: selectedUser._id,
       text: messageData.text,
       image: messageData.image,
+      // the base64 data url plays fine locally while the upload is in flight
+      audio: messageData.audio,
+      audioDuration: messageData.audioDuration,
+      createdAt: new Date().toISOString(),
       isOptimistic: true,
     };
 

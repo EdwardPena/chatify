@@ -99,6 +99,10 @@ export const useAuthStore = create((set, get) => ({
     import("./useChatStore").then(({ useChatStore }) => {
       useChatStore.getState().initMessageListener();
     });
+
+    import("./useContactStore").then(({ useContactStore }) => {
+      useContactStore.getState().initContactListener();
+    });
   },
 
   disconnectSocket: () => {
