@@ -5,6 +5,7 @@ import ChatHeader from "./ChatHeader";
 import NoChatHistoryPlaceholder from "./NoChatHistoryPlaceholder";
 import MessageInput from "./MessageInput";
 import MessagesLoadingSkeleton from "./MessagesLoadingSkeleton";
+import VoiceMessagePlayer from "./VoiceMessagePlayer";
 
 function ChatContainer() {
   const { selectedUser, getMessagesByUserId, messages, isMessagesLoading } =
@@ -45,6 +46,14 @@ function ChatContainer() {
                       src={msg.image}
                       alt="Shared"
                       className="rounded-lg h-48 object-cover"
+                    />
+                  )}
+                  {msg.audio && (
+                    <VoiceMessagePlayer
+                      src={msg.audio}
+                      duration={msg.audioDuration}
+                      messageId={msg._id}
+                      isMine={msg.senderId === authUser._id}
                     />
                   )}
                   {msg.text && <p className="mt-2">{msg.text}</p>}

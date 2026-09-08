@@ -6,6 +6,7 @@ import {
   LockIcon,
   MailIcon,
   UserIcon,
+  AtSignIcon,
   LoaderIcon,
 } from "lucide-react";
 import { Link } from "react-router";
@@ -13,6 +14,7 @@ import { Link } from "react-router";
 function SignUpPage() {
   const [formData, setFormData] = useState({
     fullName: "",
+    username: "",
     email: "",
     password: "",
   });
@@ -58,6 +60,27 @@ function SignUpPage() {
                         placeholder="John Doe"
                       />
                     </div>
+                  </div>
+
+                  {/* USERNAME */}
+                  <div>
+                    <label className="auth-input-label">Username</label>
+                    <div className="relative">
+                      <AtSignIcon className="auth-input-icon" />
+
+                      <input
+                        type="text"
+                        value={formData.username}
+                        onChange={(e) =>
+                          setFormData({ ...formData, username: e.target.value })
+                        }
+                        className="input"
+                        placeholder="johndoe"
+                      />
+                    </div>
+                    <p className="text-slate-500 text-xs mt-1">
+                      3-20 characters. This is how other people add you.
+                    </p>
                   </div>
 
                   {/* EMAIL INPUT */}
