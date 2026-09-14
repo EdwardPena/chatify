@@ -1,5 +1,11 @@
 import { Navigate, Route, Routes } from "react-router";
-import { ChatPage, Login, SignUp } from "./pages";
+import {
+  ChatPage,
+  Login,
+  SignUp,
+  ForgotPassword,
+  ResetPassword,
+} from "./pages";
 import Background from "./components/Background";
 import { useAuthStore } from "./store/useAuthStore";
 import { useEffect } from "react";
@@ -29,6 +35,14 @@ function App() {
         <Route
           path="/signup"
           element={!authUser ? <SignUp /> : <Navigate to={"/"} />}
+        />
+        <Route
+          path="/forgot-password"
+          element={!authUser ? <ForgotPassword /> : <Navigate to={"/"} />}
+        />
+        <Route
+          path="/reset-password/:token"
+          element={!authUser ? <ResetPassword /> : <Navigate to={"/"} />}
         />
       </Routes>
       <Toaster />

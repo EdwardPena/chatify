@@ -1,9 +1,19 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { generateToken } from "../lib/utils.js";
-import { sendWelcomeEmail } from "../emails/emailHandlers.js";
+import {
+  sendPasswordResetEmail,
+  sendWelcomeEmail,
+} from "../emails/emailHandlers.js";
 import { ENV } from "../lib/env.js";
 import cloudinary from "../lib/cloudinary.js";
+
+const RESET_TOKEN_MINUTES = 15;
+
+
+const hashResetToken = (token) =>
+  crypto.createHash("sha256").update(token).digest("hex");
 
 export const signup = async (req, res) => {
   // res.send("Signup endpoint");
@@ -131,6 +141,97 @@ export const login = async (req, res) => {
 export const logout = (_, res) => {
   res.cookie("jwt", "", { maxAge: 0 });
   res.status(200).json({ message: "Logged out successfully" });
+};
+
+export const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+
+    const genericMessage =
+      "If that email has an account, we just sent a reset link.";
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(200).json({ message: genericMessage });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+
+    user.resetPasswordToken = hashResetToken(resetToken);
+    user.resetPasswordExpiresAt = Date.now() + RESET_TOKEN_MINUTES * 60 * 1000;
+    await user.save();
+
+    try {
+      await sendPasswordResetEmail(
+        user.email,
+        user.fullName,
+        `${ENV.CLIENT_URL}/reset-password/${resetToken}`,
+        RESET_TOKEN_MINUTES,
+      );
+    } catch (error) {
+      // the token is useless if the email never arrived, do not leave it behind
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpiresAt = undefined;
+      await user.save();
+
+      console.error("Error sending password reset email:", error);
+      return res
+        .status(502)
+        .json({ message: "Could not send the reset email. Please try again." });
+    }
+
+    res.status(200).json({ message: genericMessage });
+  } catch (error) {
+    console.error("Error occurred while requesting a password reset:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  const { token } = req.params;
+  const { password } = req.body;
+
+  try {
+    if (!password) {
+      return res.status(400).json({ message: "A new password is required" });
+    }
+    if (password.length < 6) {
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 6 characters long" });
+    }
+
+    // an expired token stops matching here, so it fails like a wrong one
+    const user = await User.findOne({
+      resetPasswordToken: hashResetToken(token),
+      resetPasswordExpiresAt: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res
+        .status(400)
+        .json({ message: "This reset link is invalid or has expired" });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(password, salt);
+
+    // clearing the token is what makes the link single use
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpiresAt = undefined;
+    await user.save();
+
+    res.status(200).json({ message: "Password updated. You can log in now." });
+  } catch (error) {
+    console.error("Error occurred while resetting the password:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 export const updateProfile = async (req, res) => {

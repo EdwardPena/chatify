@@ -11,6 +11,8 @@ export const useAuthStore = create((set, get) => ({
   isCheckingAuth: true,
   isSigningUp: false,
   isLoggingIn: false,
+  isSendingResetLink: false,
+  isResettingPassword: false,
   socket: null,
   onlineUsers: [],
 
@@ -67,6 +69,37 @@ export const useAuthStore = create((set, get) => ({
     } catch (error) {
       toast.error("Error logging out");
       console.log("Logout error:", error);
+    }
+  },
+
+  forgotPassword: async (data) => {
+    set({ isSendingResetLink: true });
+    try {
+      const res = await axiosInstance.post("/auth/forgot-password", data);
+      toast.success(res.data.message);
+      return true;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Something went wrong");
+      return false;
+    } finally {
+      set({ isSendingResetLink: false });
+    }
+  },
+
+  resetPassword: async (token, data) => {
+    set({ isResettingPassword: true });
+    try {
+      const res = await axiosInstance.post(
+        `/auth/reset-password/${token}`,
+        data,
+      );
+      toast.success(res.data.message);
+      return true;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Something went wrong");
+      return false;
+    } finally {
+      set({ isResettingPassword: false });
     }
   },
 

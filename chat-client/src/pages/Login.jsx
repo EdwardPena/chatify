@@ -91,10 +91,18 @@ function Login() {
                   </button>
                 </form>
 
-                <div className="mt-6 text-center">
+                <div className="mt-6 text-center space-y-3">
                   <Link to="/signup" className="auth-link">
                     Don't have an accont? Sign Up
                   </Link>
+                  <div>
+                    <Link
+                      to="/forgot-password"
+                      className="text-sm text-slate-400 hover:text-cyan-400 transition-colors"
+                    >
+                      Forgot your password?
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
