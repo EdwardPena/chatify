@@ -8,3 +8,4 @@ export { default as VoiceMessagePlayer } from "./VoiceMessagePlayer";
 export { default as NoConversationPlaceholder } from "./NoConversationPlaceholder";
 export { default as ProfileHeader } from "./ProfileHeader";
 export { default as BorderAnimatedContainer } from "./BorderAnimatedContainer";
+export { default as GoogleSignInButton } from "./GoogleSignInButton";

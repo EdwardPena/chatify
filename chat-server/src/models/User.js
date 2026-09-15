@@ -23,8 +23,16 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
+      // google accounts have no password of their own
+      required: function () {
+        return !this.googleId;
+      },
       minlength: 6,
+    },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true, // only google accounts carry one, the rest stay out of the index
     },
     profilePic: {
       type: String,

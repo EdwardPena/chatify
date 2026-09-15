@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { Link } from "react-router";
 import BorderAnimatedContainer from "../components/BorderAnimatedContainer";
+import GoogleSignInButton from "../components/GoogleSignInButton";
 import {
   MessageCircleIcon,
   LockIcon,
@@ -90,6 +91,8 @@ function Login() {
                     )}
                   </button>
                 </form>
+
+                <GoogleSignInButton />
 
                 <div className="mt-6 text-center space-y-3">
                   <Link to="/signup" className="auth-link">

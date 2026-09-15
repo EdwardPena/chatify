@@ -8,12 +8,34 @@ import {
 } from "../emails/emailHandlers.js";
 import { ENV } from "../lib/env.js";
 import cloudinary from "../lib/cloudinary.js";
+import { verifyGoogleToken } from "../lib/google.js";
 
 const RESET_TOKEN_MINUTES = 15;
 
 
 const hashResetToken = (token) =>
   crypto.createHash("sha256").update(token).digest("hex");
+
+const generateUsername = async (email) => {
+  const localPart = email
+    .split("@")[0]
+    .toLowerCase()
+    .replace(/[^a-z0-9_]/g, "")
+    .slice(0, 15);
+
+  // pad in case the email leaves us short of the 3 characters we require
+  const base = (localPart || "user").padEnd(3, "0");
+
+  let username = base;
+  let suffix = 1;
+
+  while (await User.exists({ username })) {
+    username = `${base}${suffix}`;
+    suffix += 1;
+  }
+
+  return username;
+};
 
 export const signup = async (req, res) => {
   // res.send("Signup endpoint");
@@ -117,6 +139,13 @@ export const login = async (req, res) => {
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" }); // never tell the client if the email or password is incorrect for security reasons
     }
+
+    if (!user.password) {
+      return res
+        .status(400)
+        .json({ message: "This account uses Google sign in" });
+    }
+
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
     if (!isPasswordCorrect) {
@@ -134,6 +163,73 @@ export const login = async (req, res) => {
     });
   } catch (error) {
     console.error("Error occurred while logging in:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const googleLogin = async (req, res) => {
+  const { credential } = req.body;
+
+  try {
+    if (!credential) {
+      return res.status(400).json({ message: "Google credential is required" });
+    }
+
+    let payload;
+
+    try {
+      payload = await verifyGoogleToken(credential);
+    } catch (error) {
+      console.error("Invalid Google credential:", error.message);
+      return res.status(401).json({ message: "Invalid Google credential" });
+    }
+
+    const { sub: googleId, email, email_verified, name, picture } = payload;
+
+    if (!email || !email_verified) {
+      return res
+        .status(401)
+        .json({ message: "Your Google email is not verified" });
+    }
+
+    let user = await User.findOne({ $or: [{ googleId }, { email }] });
+    const isNewUser = !user;
+
+    if (user) {
+      if (!user.googleId) {
+        user.googleId = googleId;
+        if (!user.profilePic && picture) user.profilePic = picture;
+        await user.save();
+      }
+    } else {
+      user = await User.create({
+        googleId,
+        email,
+        fullName: name || email.split("@")[0],
+        username: await generateUsername(email),
+        profilePic: picture || "",
+      });
+    }
+
+    generateToken(user._id, res);
+
+    res.status(200).json({
+      _id: user._id,
+      fullName: user.fullName,
+      username: user.username,
+      email: user.email,
+      profilePic: user.profilePic,
+    });
+
+    if (isNewUser) {
+      try {
+        await sendWelcomeEmail(user.email, user.fullName, ENV.CLIENT_URL);
+      } catch (error) {
+        console.error("Error sending welcome email:", error);
+      }
+    }
+  } catch (error) {
+    console.error("Error occurred while signing in with Google:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };

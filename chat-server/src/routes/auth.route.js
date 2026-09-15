@@ -6,6 +6,7 @@ import {
   updateProfile,
   forgotPassword,
   resetPassword,
+  googleLogin,
 } from "../controllers/auth.controllers.js";
 import { protectRoute } from "../middleware/auth.middleware.js";
 import { arcjetProtection } from "../middleware/arcjet.middleware.js";
@@ -21,6 +22,8 @@ router.use(arcjetProtection);
 router.post("/signup", signup);
 
 router.post("/login", login);
+
+router.post("/google", googleLogin);
 
 router.post("/logout", logout);
 
