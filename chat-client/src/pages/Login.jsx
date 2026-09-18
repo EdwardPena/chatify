@@ -6,14 +6,14 @@ import GoogleSignInButton from "../components/GoogleSignInButton";
 import {
   MessageCircleIcon,
   LockIcon,
-  MailIcon,
+  UserIcon,
   LoaderIcon,
 } from "lucide-react";
 
 
 function Login() {
   const [formData, setFormData] = useState({
-    email: "",
+    username: "",
     password: "",
   });
   const { login, isLogginIn } = useAuthStore();
@@ -42,20 +42,20 @@ function Login() {
 
                 {/* FORM */}
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* EMAIL INPUT */}
+                  {/* USERNAME INPUT */}
                   <div>
-                    <label className="auth-input-label">Email</label>
+                    <label className="auth-input-label">Username</label>
                     <div className="relative">
-                      <MailIcon className="auth-input-icon" />
+                      <UserIcon className="auth-input-icon" />
 
                       <input
-                        type="email"
-                        value={formData.email}
+                        type="text"
+                        value={formData.username}
                         onChange={(e) =>
-                          setFormData({ ...formData, email: e.target.value })
+                          setFormData({ ...formData, username: e.target.value })
                         }
                         className="input"
-                        placeholder="johndoe@gmail.com"
+                        placeholder="johndoe"
                       />
                     </div>
                   </div>
