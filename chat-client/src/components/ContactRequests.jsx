@@ -17,14 +17,14 @@ function ContactRequests() {
     <div className="space-y-2">
       {incomingRequests.length > 0 && (
         <>
-          <h5 className="text-slate-400 text-xs font-semibold uppercase tracking-wide px-1">
+          <h5 className="sidebar-heading">
             Requests ({incomingRequests.length})
           </h5>
 
           {incomingRequests.map((request) => (
             <div
               key={request._id}
-              className="bg-cyan-500/10 p-3 rounded-lg flex items-center gap-3"
+              className="bg-brand/10 p-3 rounded-lg flex items-center gap-3"
             >
               <img
                 src={request.user.profilePic || "/avatar.png"}
@@ -36,7 +36,7 @@ function ContactRequests() {
                 <h4 className="text-slate-200 text-sm font-medium truncate">
                   {request.user.fullName}
                 </h4>
-                <p className="text-slate-400 text-xs truncate">
+                <p className="text-slate-500 text-xs truncate">
                   @{request.user.username}
                 </p>
               </div>
@@ -45,7 +45,7 @@ function ContactRequests() {
                 type="button"
                 onClick={() => acceptContactRequest(request._id)}
                 title="Accept"
-                className="size-7 rounded-full bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 flex items-center justify-center transition-colors cursor-pointer flex-shrink-0"
+                className="size-7 rounded-full bg-brand/20 text-brand-soft hover:bg-brand/30 flex items-center justify-center transition-colors cursor-pointer flex-shrink-0"
               >
                 <CheckIcon className="size-4" />
               </button>
@@ -54,7 +54,7 @@ function ContactRequests() {
                 type="button"
                 onClick={() => rejectContactRequest(request._id)}
                 title="Reject"
-                className="size-7 rounded-full bg-slate-700/50 text-slate-400 hover:text-red-400 flex items-center justify-center transition-colors cursor-pointer flex-shrink-0"
+                className="size-7 rounded-full bg-surface-4 text-slate-400 hover:text-red-400 flex items-center justify-center transition-colors cursor-pointer flex-shrink-0"
               >
                 <XIcon className="size-4" />
               </button>
@@ -65,14 +65,14 @@ function ContactRequests() {
 
       {outgoingRequests.length > 0 && (
         <>
-          <h5 className="text-slate-400 text-xs font-semibold uppercase tracking-wide px-1 pt-2">
+          <h5 className="sidebar-heading pt-2">
             Sent ({outgoingRequests.length})
           </h5>
 
           {outgoingRequests.map((request) => (
             <div
               key={request._id}
-              className="bg-slate-800/50 p-3 rounded-lg flex items-center gap-3"
+              className="bg-surface-3 p-3 rounded-lg flex items-center gap-3"
             >
               <img
                 src={request.user.profilePic || "/avatar.png"}
@@ -93,7 +93,7 @@ function ContactRequests() {
                 type="button"
                 onClick={() => cancelContactRequest(request._id)}
                 title="Cancel request"
-                className="text-slate-400 hover:text-red-400 transition-colors cursor-pointer flex-shrink-0"
+                className="text-slate-500 hover:text-red-400 transition-colors cursor-pointer flex-shrink-0"
               >
                 <XIcon className="size-4" />
               </button>

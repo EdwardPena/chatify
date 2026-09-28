@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  deleteMessage,
   getChatPartners,
   getMessagesByUserId,
   sendMessage,
@@ -11,9 +12,9 @@ const router = express.Router();
 
 router.use(arcjetProtection, protectRoute);
 
-// contacts now live under /api/contacts, they are no longer "every user"
 router.get("/chats", getChatPartners);
 router.get("/:id", getMessagesByUserId);
 router.post("/send/:id", sendMessage);
+router.delete("/:messageId", deleteMessage);
 
 export default router;

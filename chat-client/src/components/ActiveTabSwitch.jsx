@@ -12,17 +12,14 @@ function ActiveTabSwitch() {
   }, [getContactRequests]);
 
   return (
-    <div
-      role="tablist"
-      className="tabs tabs-box tabs-sm bg-transparent p-2 m-2 w-full"
-    >
+    <div role="tablist" className="flex gap-1 p-1 bg-surface-0 rounded-lg">
       <button
         role="tab"
         onClick={() => setActiveTab("chats")}
-        className={`tab flex-1 ${
+        className={`flex-1 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer ${
           activeTab === "chats"
-            ? "tab-active bg-cyan-500/20 text-cyan-400"
-            : "text-slate-400"
+            ? "bg-brand text-white"
+            : "text-slate-400 hover:text-slate-200"
         }`}
       >
         Chats
@@ -31,15 +28,15 @@ function ActiveTabSwitch() {
       <button
         role="tab"
         onClick={() => setActiveTab("contacts")}
-        className={`tab flex-1 mr-2 gap-2 ${
+        className={`flex-1 py-1.5 rounded-md text-xs font-medium flex items-center justify-center gap-2 transition-colors cursor-pointer ${
           activeTab === "contacts"
-            ? "tab-active bg-cyan-500/20 text-cyan-400"
-            : "text-slate-400"
+            ? "bg-brand text-white"
+            : "text-slate-400 hover:text-slate-200"
         }`}
       >
         Contacts
         {incomingRequests.length > 0 && (
-          <span className="bg-cyan-500 text-white text-xs font-semibold rounded-full size-5 flex items-center justify-center">
+          <span className="bg-brand-soft text-white text-[10px] font-semibold rounded-full size-4 flex items-center justify-center">
             {incomingRequests.length > 9 ? "9+" : incomingRequests.length}
           </span>
         )}

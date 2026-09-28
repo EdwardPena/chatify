@@ -6,7 +6,6 @@ import {
   ForgotPassword,
   ResetPassword,
 } from "./pages";
-import Background from "./components/Background";
 import { useAuthStore } from "./store/useAuthStore";
 import { useEffect } from "react";
 import PageLoader from "./components/PageLoader";
@@ -22,7 +21,7 @@ function App() {
   if (isCheckingAuth) return <PageLoader />;
 
   return (
-    <Background>
+    <>
       <Routes>
         <Route
           path="/"
@@ -45,8 +44,16 @@ function App() {
           element={!authUser ? <ResetPassword /> : <Navigate to={"/"} />}
         />
       </Routes>
-      <Toaster />
-    </Background>
+      <Toaster
+        toastOptions={{
+          style: {
+            background: "#1c2231",
+            color: "#e2e8f0",
+            border: "1px solid #252c3d",
+          },
+        }}
+      />
+    </>
   );
 }
 

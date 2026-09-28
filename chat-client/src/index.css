@@ -3,6 +3,17 @@
 
 @theme {
   --animate-border: border 4s linear infinite;
+
+  /* the planes get lighter as they come forward: rail, then sidebar, then the
+     chat canvas, so the conversation is the brightest thing on screen */
+  --color-surface-0: #080a11;
+  --color-surface-1: #0e1119;
+  --color-surface-2: #151925;
+  --color-surface-3: #1c2231;
+  --color-surface-4: #262e40;
+  --color-edge: #252c3d;
+  --color-brand: #6366f1;
+  --color-brand-soft: #818cf8;
 }
 
 @keyframes border {
@@ -15,28 +26,104 @@
   initial-value: 0deg;
   syntax: "<angle>";
 }
-.input {
-  @apply w-full bg-slate-800/50 border border-slate-700 rounded-lg py-2 pl-10 pr-4 text-slate-200 placeholder-slate-400 focus:ring-2 focus:ring-cyan-500 focus:border-transparent;
+
+@layer utilities {
+  /* the app is one dark sheet, scrollbars should not cut holes in it */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-surface-4) transparent;
+  }
 }
 
-.auth-input-icon {
-  @apply absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 size-5;
-}
+@layer components {
+  /* every class here needs a name daisyui does not already define,
+     otherwise its own rules win the cascade */
+  .auth-input {
+    @apply w-full bg-surface-3 border border-edge rounded-lg py-2 pl-10 pr-4 text-slate-200 placeholder-slate-500 focus:ring-2 focus:ring-brand focus:border-transparent focus:outline-none;
+  }
 
-.auth-input-label {
-  @apply block text-sm font-medium text-slate-300 mb-2;
-}
+  .auth-input-icon {
+    @apply absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 size-5;
+  }
 
-.auth-badge {
-  @apply inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-cyan-500/20 text-cyan-300;
-}
+  .auth-input-label {
+    @apply block text-sm font-medium text-slate-300 mb-2;
+  }
 
-.auth-btn {
-  @apply w-full bg-cyan-500 text-white rounded-lg py-2.5 font-medium
-  hover:bg-cyan-600 focus:ring-2 focus:ring-cyan-500;
-}
+  .auth-badge {
+    @apply inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-brand/15 text-brand-soft;
+  }
 
-.auth-link {
-  @apply px-4 py-2 inline-block bg-cyan-500/10 rounded-lg text-cyan-400
-  hover:text-cyan-500 text-sm transition-colors;
+  .auth-btn {
+    @apply w-full bg-brand text-white rounded-lg py-2.5 font-medium
+    hover:bg-brand-soft focus:ring-2 focus:ring-brand;
+  }
+
+  .auth-link {
+    @apply px-4 py-2 inline-block bg-brand/10 rounded-lg text-brand-soft
+    hover:text-white text-sm transition-colors;
+  }
+
+  /* --- app shell --- */
+
+  .icon-btn {
+    @apply inline-flex items-center text-slate-500 hover:text-slate-200
+    transition-colors cursor-pointer;
+  }
+
+  /* the square-to-squircle morph the server rail does on hover */
+  .rail-btn {
+    @apply size-11 flex items-center justify-center rounded-2xl bg-surface-3 text-slate-300
+    hover:rounded-xl hover:bg-brand hover:text-white transition-all cursor-pointer overflow-hidden;
+  }
+
+  .rail-btn-active {
+    @apply rounded-xl bg-brand text-white;
+  }
+
+  .sidebar-heading {
+    @apply flex items-center gap-1 px-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500;
+  }
+
+  .sidebar-item {
+    @apply w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm text-slate-400
+    hover:bg-surface-3 hover:text-slate-200 transition-colors cursor-pointer text-left;
+  }
+
+  .sidebar-item-active {
+    @apply bg-brand/90 text-white hover:bg-brand hover:text-white;
+  }
+
+  .panel {
+    @apply bg-surface-3 border border-edge rounded-xl;
+  }
+
+  /* --- dialogs --- */
+
+  .dialog-backdrop {
+    @apply fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4;
+  }
+
+  .dialog-card {
+    @apply w-full max-w-md bg-surface-2 border border-edge rounded-2xl shadow-2xl shadow-black/50;
+  }
+
+  .field-label {
+    @apply block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-2;
+  }
+
+  .field-input {
+    @apply w-full bg-surface-1 border border-edge rounded-lg py-2.5 px-3 text-sm text-slate-200
+    placeholder-slate-500 focus:ring-2 focus:ring-brand focus:border-transparent focus:outline-none;
+  }
+
+  .primary-btn {
+    @apply bg-brand text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-brand-soft
+    transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .ghost-btn {
+    @apply bg-surface-3 text-slate-300 rounded-lg px-4 py-2 text-sm font-medium hover:bg-surface-4
+    transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
+  }
 }

@@ -2,6 +2,8 @@ import express from "express";
 import authRoutes from "./routes/auth.route.js";
 import messageRoutes from "./routes/message.route.js";
 import contactRoutes from "./routes/contact.route.js";
+import serverRoutes from "./routes/server.route.js";
+import channelRoutes from "./routes/channel.route.js";
 import path from "path";
 import { connectDB } from "./lib/db.js";
 import { ENV } from "./lib/env.js";
@@ -20,6 +22,8 @@ app.use(cors({ origin: ENV.CLIENT_URL, credentials: true }));
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/contacts", contactRoutes);
+app.use("/api/servers", serverRoutes);
+app.use("/api/channels", channelRoutes);
 
 // make ready for deployment
 

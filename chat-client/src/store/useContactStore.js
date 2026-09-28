@@ -14,6 +14,19 @@ export const useContactStore = create((set, get) => ({
   isSearching: false,
   isSendingRequest: false,
 
+  // wipes everything that belonged to the last person signed in here
+  reset: () =>
+    set({
+      contacts: [],
+      incomingRequests: [],
+      outgoingRequests: [],
+      searchResults: [],
+      isContactsLoading: false,
+      isRequestsLoading: false,
+      isSearching: false,
+      isSendingRequest: false,
+    }),
+
   getMyContacts: async () => {
     set({ isContactsLoading: true });
     try {
@@ -59,7 +72,7 @@ export const useContactStore = create((set, get) => ({
 
   clearSearch: () => set({ searchResults: [] }),
 
-  sendContactRequest: async (username) => {
+  sendContactRequest: async (username, refreshQuery) => {
     set({ isSendingRequest: true });
     try {
       const res = await axiosInstance.post("/contacts/requests", { username });
@@ -76,9 +89,12 @@ export const useContactStore = create((set, get) => ({
       }
 
       await get().getContactRequests();
-      // refresh the badges on any user still shown in the search results
+      // refresh the badges on whatever the user actually searched for, so the
+      // other results stay on screen instead of collapsing to this one person
       const { searchResults } = get();
-      if (searchResults.length > 0) await get().searchUsers(username);
+      if (searchResults.length > 0) {
+        await get().searchUsers(refreshQuery?.trim() || username);
+      }
     } catch (error) {
       toast.error(error.response?.data.message || "Something went wrong");
     } finally {

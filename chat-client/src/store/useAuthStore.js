@@ -6,6 +6,20 @@ import { io } from "socket.io-client";
 const BASE_URL =
   import.meta.env.MODE === "development" ? "http://localhost:3000" : "/";
 
+// signing out has to leave nothing behind: the next person to sign in on this
+// browser must not inherit the last one's servers, chats or contacts
+const resetAppState = async () => {
+  const [servers, chats, contacts] = await Promise.all([
+    import("./useServerStore"),
+    import("./useChatStore"),
+    import("./useContactStore"),
+  ]);
+
+  servers.useServerStore.getState().reset();
+  chats.useChatStore.getState().reset();
+  contacts.useContactStore.getState().reset();
+};
+
 export const useAuthStore = create((set, get) => ({
   authUser: null,
   isCheckingAuth: true,
@@ -81,7 +95,8 @@ export const useAuthStore = create((set, get) => ({
       await axiosInstance.post("/auth/logout");
       set({ authUser: null });
       toast.success("Logged out successfully");
-      get().disconnectSocket();
+      await get().disconnectSocket();
+      await resetAppState();
     } catch (error) {
       toast.error("Error logging out");
       console.log("Logout error:", error);
@@ -152,14 +167,35 @@ export const useAuthStore = create((set, get) => ({
     import("./useContactStore").then(({ useContactStore }) => {
       useContactStore.getState().initContactListener();
     });
+
+    import("./useServerStore").then(({ useServerStore }) => {
+      useServerStore.getState().initServerListener();
+    });
+
+    import("./useVoiceStore").then(({ useVoiceStore }) => {
+      useVoiceStore.getState().initVoiceListener();
+    });
+
+    import("./useCallStore").then(({ useCallStore }) => {
+      useCallStore.getState().initCallListener();
+    });
   },
 
-  disconnectSocket: () => {
+  disconnectSocket: async () => {
     const { socket } = get();
-    if (socket) {
-      socket.disconnect();
-      set({ socket: null });
-    }
+    if (!socket) return;
+
+    // hang up before the socket goes, otherwise these emits land on a closed
+    // connection and the other side only finds out via the disconnect
+    const [voice, calls] = await Promise.all([
+      import("./useVoiceStore"),
+      import("./useCallStore"),
+    ]);
+    voice.useVoiceStore.getState().leaveVoiceChannel();
+    calls.useCallStore.getState().endCall();
+
+    socket.disconnect();
+    set({ socket: null });
   },
 }));
 // authUser: { name: "jhon", _id: 123, age: 25 },

@@ -2,7 +2,7 @@
 // https://cruip-tutorials.vercel.app/animated-gradient-border/
 function BorderAnimatedContainer({ children }) {
   return (
-    <div className="w-full h-full [background:linear-gradient(45deg,#172033,theme(colors.slate.800)_50%,#172033)_padding-box,conic-gradient(from_var(--border-angle),theme(colors.slate.600/.48)_80%,_theme(colors.cyan.500)_86%,_theme(colors.cyan.300)_90%,_theme(colors.cyan.500)_94%,_theme(colors.slate.600/.48))_border-box] rounded-2xl border border-transparent animate-border  flex overflow-hidden">
+    <div className="w-full h-full [background:linear-gradient(45deg,#151925,#1c2231_50%,#151925)_padding-box,conic-gradient(from_var(--border-angle),theme(colors.slate.700/.48)_80%,_#6366f1_86%,_#a5b4fc_90%,_#6366f1_94%,_theme(colors.slate.700/.48))_border-box] rounded-2xl border border-transparent animate-border  flex overflow-hidden">
       {children}
     </div>
   );

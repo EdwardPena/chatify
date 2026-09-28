@@ -10,9 +10,9 @@ function GoogleSignInButton() {
     <div className="mt-6">
       {/* DIVIDER */}
       <div className="flex items-center gap-3 mb-6">
-        <span className="h-px flex-1 bg-slate-700" />
-        <span className="text-xs text-slate-400">OR</span>
-        <span className="h-px flex-1 bg-slate-700" />
+        <span className="h-px flex-1 bg-edge" />
+        <span className="text-xs text-slate-500">OR</span>
+        <span className="h-px flex-1 bg-edge" />
       </div>
 
       <div className="flex justify-center">

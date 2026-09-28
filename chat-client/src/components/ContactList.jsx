@@ -7,8 +7,8 @@ import UsersLoadingSkeleton from "./UsersLoadingSkeleton";
 import AddContact from "./AddContact";
 import ContactRequests from "./ContactRequests";
 
-function ContactList() {
-  const { setSelectedUser } = useChatStore();
+function ContactList({ query = "" }) {
+  const { selectedUser, setSelectedUser } = useChatStore();
   const {
     getMyContacts,
     getContactRequests,
@@ -33,6 +33,16 @@ function ContactList() {
     if (confirmed) removeContact(contact._id);
   };
 
+  // the sidebar search filters what is already loaded, no round trip needed
+  const term = query.trim().toLowerCase();
+  const visibleContacts = term
+    ? contacts.filter(
+        (contact) =>
+          contact.fullName.toLowerCase().includes(term) ||
+          contact.username.toLowerCase().includes(term),
+      )
+    : contacts;
+
   return (
     <div className="space-y-3">
       <AddContact />
@@ -41,42 +51,37 @@ function ContactList() {
       {isContactsLoading ? (
         <UsersLoadingSkeleton />
       ) : contacts.length === 0 ? (
-        <p className="text-slate-400 text-sm text-center px-4 py-6">
+        <p className="text-slate-500 text-xs text-center px-4 py-6">
           No contacts yet. Search for someone by their username to send them a
           contact request.
         </p>
       ) : (
-        contacts.map((contact) => {
-          const isOnline = onlineUsers?.includes(contact._id);
+        <div>
+          <h5 className="sidebar-heading mb-1">Contacts</h5>
 
-          return (
-            <div
-              key={contact._id}
-              className="bg-cyan-500/10 p-4 rounded-lg cursor-pointer hover:bg-cyan-500/20 transition-colors group"
-              onClick={() => setSelectedUser(contact)}
-            >
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <div className="size-12 rounded-full">
-                    <img
-                      src={contact.profilePic || "/avatar.png"}
-                      alt={contact.fullName}
-                      className="size-full rounded-full object-cover"
-                    />
-                  </div>
+          {visibleContacts.map((contact) => {
+            const isOnline = onlineUsers?.includes(contact._id);
+
+            return (
+              <div
+                key={contact._id}
+                className={`sidebar-item group ${
+                  selectedUser?._id === contact._id ? "sidebar-item-active" : ""
+                }`}
+                onClick={() => setSelectedUser(contact)}
+              >
+                <div className="relative flex-shrink-0">
+                  <img
+                    src={contact.profilePic || "/avatar.png"}
+                    alt={contact.fullName}
+                    className="size-6 rounded-full object-cover"
+                  />
                   {isOnline && (
-                    <span className="absolute bottom-0 right-0 size-3 rounded-full bg-green-500 border-2 border-slate-800" />
+                    <span className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full bg-green-500 border-2 border-surface-1" />
                   )}
                 </div>
 
-                <div className="min-w-0 flex-1">
-                  <h4 className="text-slate-200 font-medium truncate">
-                    {contact.fullName}
-                  </h4>
-                  <p className="text-slate-400 text-xs truncate">
-                    @{contact.username}
-                  </p>
-                </div>
+                <span className="truncate flex-1">{contact.fullName}</span>
 
                 <button
                   type="button"
@@ -84,12 +89,12 @@ function ContactList() {
                   title="Remove contact"
                   className="text-slate-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all cursor-pointer flex-shrink-0"
                 >
-                  <UserXIcon className="size-5" />
+                  <UserXIcon className="size-4" />
                 </button>
               </div>
-            </div>
-          );
-        })
+            );
+          })}
+        </div>
       )}
     </div>
   );

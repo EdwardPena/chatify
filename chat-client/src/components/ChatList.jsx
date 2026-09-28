@@ -4,11 +4,12 @@ import NoChatsFound from "./NoChatsFound";
 import { useChatStore } from "../store/useChatStore";
 import { useAuthStore } from "../store/useAuthStore";
 
-function ChatsList() {
+function ChatsList({ query = "" }) {
   const {
     getMyChatPartners,
     chats,
     isUsersLoading,
+    selectedUser,
     setSelectedUser,
     unreadCounts,
   } = useChatStore();
@@ -18,45 +19,53 @@ function ChatsList() {
     getMyChatPartners();
   }, [getMyChatPartners]);
 
+  // the sidebar search filters what is already loaded, no round trip needed
+  const term = query.trim().toLowerCase();
+  const visibleChats = term
+    ? chats.filter(
+        (chat) =>
+          chat.fullName.toLowerCase().includes(term) ||
+          chat.username?.toLowerCase().includes(term),
+      )
+    : chats;
+
   if (isUsersLoading) return <UsersLoadingSkeleton />;
   if (chats.length === 0) return <NoChatsFound />;
 
   return (
     <>
-      {chats.map((chat) => {
+      <h5 className="sidebar-heading mb-1">Direct messages</h5>
+
+      {visibleChats.map((chat) => {
         const isOnline = onlineUsers?.includes(chat._id);
         const unreadCount = unreadCounts?.[chat._id] || 0;
 
         return (
           <div
             key={chat._id}
-            className="bg-cyan-500/10 p-4 rounded-lg cursor-pointer hover:bg-cyan-500/20 transition-colors"
+            className={`sidebar-item ${
+              selectedUser?._id === chat._id ? "sidebar-item-active" : ""
+            }`}
             onClick={() => setSelectedUser(chat)}
           >
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="size-12 rounded-full">
-                  <img
-                    src={chat.profilePic || "/avatar.png"}
-                    alt={chat.fullName}
-                    className="size-full rounded-full object-cover"
-                  />
-                </div>
-                {isOnline && (
-                  <span className="absolute bottom-0 right-0 size-3 rounded-full bg-green-500 border-2 border-slate-800" />
-                )}
-              </div>
-
-              <h4 className="text-slate-200 font-medium truncate flex-1">
-                {chat.fullName}
-              </h4>
-
-              {unreadCount > 0 && (
-                <span className="bg-cyan-500 text-white text-xs font-semibold rounded-full size-5 flex items-center justify-center flex-shrink-0">
-                  {unreadCount > 9 ? "9+" : unreadCount}
-                </span>
+            <div className="relative flex-shrink-0">
+              <img
+                src={chat.profilePic || "/avatar.png"}
+                alt={chat.fullName}
+                className="size-6 rounded-full object-cover"
+              />
+              {isOnline && (
+                <span className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full bg-green-500 border-2 border-surface-1" />
               )}
             </div>
+
+            <span className="truncate flex-1">{chat.fullName}</span>
+
+            {unreadCount > 0 && (
+              <span className="bg-brand text-white text-[10px] font-semibold rounded-full size-4.5 flex items-center justify-center flex-shrink-0">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
           </div>
         );
       })}

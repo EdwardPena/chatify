@@ -12,6 +12,22 @@ export const useChatStore = create((set, get) => ({
   isMessagesLoading: false,
   isSoundEnabled: JSON.parse(localStorage.getItem("isSoundEnabled")) === true,
   unreadCounts: {}, // { [userId]: unread chats }
+  replyingTo: null, // the message the composer is currently answering
+
+  setReplyingTo: (message) => set({ replyingTo: message }),
+
+  // wipes everything that belonged to the last person signed in here
+  reset: () =>
+    set({
+      chats: [],
+      messages: [],
+      activeTab: "chats",
+      selectedUser: null,
+      replyingTo: null,
+      unreadCounts: {},
+      isUsersLoading: false,
+      isMessagesLoading: false,
+    }),
 
   toggleSound: () => {
     localStorage.setItem("isSoundEnabled", !get().isSoundEnabled);
@@ -21,7 +37,7 @@ export const useChatStore = create((set, get) => ({
   setActiveTab: (tab) => set({ activeTab: tab }),
 
   setSelectedUser: (selectedUser) => {
-    set({ selectedUser });
+    set({ selectedUser, replyingTo: null });
 
     // al abrir un chat, resetea su contador de no leídos
     if (selectedUser) {
@@ -56,7 +72,7 @@ export const useChatStore = create((set, get) => ({
   },
 
   sendMessage: async (messageData) => {
-    const { selectedUser } = get();
+    const { selectedUser, replyingTo } = get();
     const { authUser } = useAuthStore.getState();
     const tempId = `temp-${Date.now()}`;
 
@@ -69,16 +85,18 @@ export const useChatStore = create((set, get) => ({
       // the base64 data url plays fine locally while the upload is in flight
       audio: messageData.audio,
       audioDuration: messageData.audioDuration,
+      replyTo: replyingTo,
+      status: "sent",
       createdAt: new Date().toISOString(),
       isOptimistic: true,
     };
 
-    set({ messages: [...get().messages, optimisticMessage] });
+    set({ messages: [...get().messages, optimisticMessage], replyingTo: null });
 
     try {
       const res = await axiosInstance.post(
         `/messages/send/${selectedUser._id}`,
-        messageData,
+        { ...messageData, replyTo: replyingTo?._id },
       );
       set({
         messages: get().messages.map((msg) =>
@@ -93,11 +111,62 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
+  searchMessages: async (term) => {
+    const { selectedUser } = get();
+    if (!selectedUser || !term.trim()) return [];
+
+    try {
+      const res = await axiosInstance.get(`/messages/${selectedUser._id}`, {
+        params: { search: term.trim() },
+      });
+      return res.data;
+    } catch (error) {
+      toast.error(error.response?.data.message || "Something went wrong");
+      return [];
+    }
+  },
+
+  deleteMessage: async (messageId) => {
+    try {
+      await axiosInstance.delete(`/messages/${messageId}`);
+      set({ messages: get().messages.filter((msg) => msg._id !== messageId) });
+    } catch (error) {
+      toast.error(error.response?.data.message || "Something went wrong");
+    }
+  },
+
   initMessageListener: () => {
     const socket = useAuthStore.getState().socket;
     if (!socket) return;
 
     socket.off("newMessage");
+    socket.off("messageDeleted");
+    socket.off("messagesDelivered");
+    socket.off("messagesRead");
+
+    socket.on("messagesDelivered", ({ messageIds }) => {
+      const ids = new Set(messageIds);
+      set({
+        messages: get().messages.map((msg) =>
+          ids.has(msg._id) && msg.status === "sent"
+            ? { ...msg, status: "delivered" }
+            : msg,
+        ),
+      });
+    });
+
+    socket.on("messagesRead", ({ messageIds }) => {
+      const ids = new Set(messageIds);
+      set({
+        messages: get().messages.map((msg) =>
+          ids.has(msg._id) ? { ...msg, status: "read" } : msg,
+        ),
+      });
+    });
+
+    socket.on("messageDeleted", ({ messageId }) => {
+      set({ messages: get().messages.filter((msg) => msg._id !== messageId) });
+    });
 
     socket.on("newMessage", (newMessage) => {
       const { selectedUser, isSoundEnabled } = get();
@@ -106,6 +175,8 @@ export const useChatStore = create((set, get) => ({
 
       if (isChatOpen) {
         set({ messages: [...get().messages, newMessage] });
+        // we are looking right at it, so it is read on arrival
+        socket.emit("messages:read", { fromUserId: newMessage.senderId });
       } else {
         set((state) => ({
           unreadCounts: {
@@ -114,6 +185,13 @@ export const useChatStore = create((set, get) => ({
               (state.unreadCounts[newMessage.senderId] || 0) + 1,
           },
         }));
+
+        // first message from this person: they are not in the list yet, so the
+        // unread badge would have had no row to sit on
+        const isKnown = get().chats.some(
+          (chat) => chat._id === newMessage.senderId,
+        );
+        if (!isKnown) get().getMyChatPartners();
       }
 
       if (isSoundEnabled) {
@@ -128,6 +206,10 @@ export const useChatStore = create((set, get) => ({
 
   removeMessageListener: () => {
     const socket = useAuthStore.getState().socket;
-    if (socket) socket.off("newMessage");
+    if (!socket) return;
+    socket.off("newMessage");
+    socket.off("messageDeleted");
+    socket.off("messagesDelivered");
+    socket.off("messagesRead");
   },
 }));

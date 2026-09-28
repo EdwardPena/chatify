@@ -94,7 +94,7 @@ function VoiceMessagePlayer({ src, duration, messageId, isMine }) {
         className={`size-9 rounded-full flex items-center justify-center flex-shrink-0 transition-colors cursor-pointer ${
           isMine
             ? "bg-white/20 text-white hover:bg-white/30"
-            : "bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30"
+            : "bg-brand/20 text-brand-soft hover:bg-brand/30"
         }`}
       >
         {isPlaying ? (
@@ -121,8 +121,8 @@ function VoiceMessagePlayer({ src, duration, messageId, isMine }) {
                     ? "bg-white"
                     : "bg-white/35"
                   : isPlayed
-                    ? "bg-cyan-400"
-                    : "bg-slate-600"
+                    ? "bg-brand-soft"
+                    : "bg-surface-4"
               }`}
             />
           );
@@ -131,7 +131,7 @@ function VoiceMessagePlayer({ src, duration, messageId, isMine }) {
 
       <span
         className={`text-xs tabular-nums flex-shrink-0 ${
-          isMine ? "text-white/80" : "text-slate-400"
+          isMine ? "text-white/80" : "text-slate-500"
         }`}
       >
         {formatTime(isPlaying || currentTime > 0 ? currentTime : totalTime)}
